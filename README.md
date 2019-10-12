@@ -1,0 +1,2 @@
+# solver
+Board game solvers
