@@ -1,0 +1,10 @@
+"""
+    Module containing standard data on objects in a Boggle game.
+"""
+
+SCHEME_STANDARD = {0:0, 1:0, 2:0, 3:1, 4:1, 5:2, 6:3, 7:5, 8:11}
+
+CUBES_STANDARD = (
+    "RIFOBX,IFEHEY,DENOWS,UTOKND,HMSRAO,LUPETS,ACITOA,YLGKUE,"
+    "QBMJOA,EHISPN,VETIGN,BALIYT,EZAVND,RALESC,UWILRG,PACEMD"
+)
