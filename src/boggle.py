@@ -1,20 +1,17 @@
 """
-    This module provides the necessary components for playing a game of
-    Boggle.
+    This modules contains the BoggleSolver, used to find all the words in a
+    Boggle board.
 """
 
-import random
 import re
-
 from collections import defaultdict
 from itertools import product
 from pythonds.basic.stack import Stack
-import numpy as np
 
-import wordtools
+from src import wordtools
 
 
-class Solver(wordtools.WordTree):
+class BoggleSolver(wordtools.WordTree):
     """
         Class for solving a Boggle board.
 
@@ -132,107 +129,3 @@ class Solver(wordtools.WordTree):
             if (adj_row, adj_col) not in path:
                 adjacent.append((adj_row, adj_col))
         return adjacent
-
-
-class Tray():
-    """
-        Class for storing information about a Boggle tray.
-
-        Attributes:
-        > width (int) - the number of columns of the tray
-        > height (int) - the number of rows of the tray
-        > cubes (lst) - list of uppercase strings, each string
-            representing the letters of a cube's faces, first letter is
-            the top face
-        > board (lst) - 2d matrix representing a Boggle board, all
-            entries in caps
-        > substitutions (dict) - mapping for swapping sub-strings in
-            words for single character representations.
-            e.g. substitute = {"Q" : "QU"}. Needs to be all in caps.
-    """
-
-    def __init__(self, width, height, cubes, substitutions=None):
-        self.width = width
-        self.height = height
-        self.cubes = cubes.split(',')
-        self.board = np.full((height, width), "")
-        self.substitutions = substitutions if substitutions else {"QU": "Q"}
-
-    def __repr__(self):
-        rep = ""
-        gap = " " * max([1] + [len(v) for v in self.substitutions.values()])
-        for row in self.board:
-            rep += gap.join(list(row) + ["\n"])
-        for substitute, sub_string in self.substitutions.items():
-            rep = rep.replace(substitute + gap[1:], sub_string.capitalize())
-        return rep
-
-    def shake(self):
-        """
-            Shakes the tray so all cubes are in randomly chosen
-            positions with one of their six sides facing up.
-
-            Returns:
-            > (lst) - 2d matrix of the top faces of the cubes after
-                Boggle board has been shaken
-        """
-        random.shuffle(self.cubes)
-        for num, cube in enumerate(self.cubes):
-            self.board[num // self.height][num % self.width] = (
-                random.sample(cube, 1)[0]
-            )
-        return self.board
-
-
-class Player():
-    """
-        Class for representing a player in a Boggle game.
-
-        Attributes:
-        > name (str) - player's name
-        > scheme (dict) - keys are word length, values are points given
-        > score (int) - the player's current score
-        > solutions (set) - words tha tcan be found on the board
-        > words (dict) - list of valid words added by the player
-    """
-
-    def __init__(self, name, scheme):
-        self.name = name
-        self.scheme = scheme
-        self.score = 0
-        self.solutions = set()
-        self.words = dict()
-
-    def __repr__(self):
-        words = ", ".join(self.words.keys())
-        return "%s:\n\nScore: %i\nWords found: %s" % (
-            self.name, self.score, words
-        )
-
-    def add_word(self, word):
-        """Adds a word and its score to self.words if valid."""
-        if not word in self.solutions:
-            return "%s is not a valid word on the board." % word
-        if word in self.words:
-            return "%s is already in the list of found words." % word
-        points = self.scheme[len(word)]
-        if points == 0:
-            return "%s does not score any points." % word
-        self.words[word] = points
-        self.score += points
-        return "%s scored %i points." % (word, points)
-
-    def update_solutions(self, solutions):
-        """Update self.solutions for the current board."""
-        self.solutions = solutions
-
-    def summary(self):
-        """Provides a summary on the game."""
-        summary_string = (
-            "%s found %i/%i words.\nThose words and their scores "
-            "are:\n%s.\n%s's total score was %i"
-        )
-        return summary_string % (
-            self.name, len(self.words), len(self.solutions),
-            str(self.words), self.name, self.score
-        )

@@ -2,9 +2,167 @@
     Basic CLI for playing a game of Scrabble.
 """
 
-from scrabble import Solver, Board, Bag, Player
+# pylint: disable=invalid-name
 
-import solver_cli
+from enum import Enum
+from itertools import product
+import random
+from string import ascii_uppercase
+import numpy as np
+
+from src import scrabble
+from src.scrabble import ScrabbleSolver, TILES_STANDARD, PREMIUM_STANDARD
+import utilities as utils
+
+
+class Board():
+    """
+        Class for storing information about a Scrabble board.
+
+        Attributes:
+        > width (int) - the width of the board
+        > height (int) - the height of the board
+        > tiles (np.array) - 2d matrix representing a Scrabble board,
+            entries in caps for normal tiles, lower case for blanks
+    """
+
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.tiles = np.full((height, width), None)
+
+    def __repr__(self):
+        rows = self.tiles.copy()
+        #rows[rows == None] = '\033[92m' + "*" + '\033[95m'
+        for row, col in np.ndindex(rows.shape):
+            tile = rows[row, col] or "*"
+            if row == (rows.shape[1]-1)/2 and col == (rows.shape[0]-1)/2:
+                colour = '\33[103m\33[30m'
+            else:
+                colour = {
+                    "d": '\33[46m\33[30m',
+                    "t": '\33[44m\33[30m',
+                    "D": '\33[43m\33[30m',
+                    "T": '\33[41m\33[30m'
+                }.get(PREMIUM_STANDARD[row][col], '\33[40m')
+            rows[row, col] = colour + tile + '\33[40m' + '\33[0m'
+        header = list(ascii_uppercase)[:self.width]
+        main = [f'\n{n+1:>2} ' + " ".join(row) for n, row in enumerate(rows)]
+        return "   " + " ".join(header) + "".join(main)
+
+    def set_word(self, word, x, y, orientation):
+        """Places the given word on the board, originating at position
+        (x, y) with orientation 0 if horizontal, 1 if vertical."""
+        placed = []
+        for letter in word:
+            if self._set_tile(x, y, letter):
+                placed.append(letter)
+            x, y = x + (not orientation), y + (orientation)
+        return placed
+
+    def clear_board(self):
+        """Remove all tiles on the board."""
+        self.tiles = np.full((self.height, self.width), None)
+
+    def _set_tile(self, x, y, letter):
+        """Places the tile of the given letter at position (x, y)."""
+        if x in range(self.width) and y in range(self.height):
+            pre_tile = self.tiles[y, x]
+            self.tiles[y, x] = letter
+            return pre_tile == None
+        return False
+
+
+class Bag():
+    """
+        Class for representing a bag of tiles in a game of Scrabble.
+
+        Attributes:
+        > tiles (lst) - list of starting tiles in the bag. All letter
+            tiles are in caps, blanks are "#"
+    """
+
+    def __init__(self, tiles=None):
+        self.tiles = tiles if tiles else TILES_STANDARD
+        self.shake()
+
+    def shake(self):
+        """Randomise the order of the tiles in the bag."""
+        random.shuffle(self.tiles)
+
+    def add_tiles(self, tiles):
+        """Adds the list given tiles to the bag."""
+        self.tiles += tiles
+
+    def remove_tiles(self, amount):
+        """Returns a list of 'amount' number of removed tiles. If there
+        are not enough tiles, the remained of the tiles are returned."""
+        return [self._pop_tile() for _ in range(min(len(self.tiles), amount))]
+
+    def _pop_tile(self):
+        """Removes a tile from the top of the bag, if it exists."""
+        if self.tiles:
+            return self.tiles.pop()
+        return None
+
+
+class Player():
+    """
+        Class for representing a player in a Scrabble game.
+
+        Attributes:
+        > name (str) - player's name
+        > solver (ScrabbleSolver) - instance of ScrabbleSolver used for calculating
+            scores
+        > board (Board) - instance of Board for placing tiles
+        > bag (Bag) - instance of  Bag used for collecting tiles
+        > score (int) - the player's current score
+        > rack (lst) - list representing tiles in the rack
+        > words (dict) - data on words added
+    """
+
+    def __init__(self, name, solver, board, bag):
+        self.name = name
+        self.solver = solver
+        self.board = board
+        self.bag = bag
+        self.score = 0
+        self.rack = []
+        self.words = {}
+        self.replenish_tiles()
+
+    def __repr__(self):
+        return "Score: %i\nRack: %s" % (self.score, self.rack)
+
+    def replenish_tiles(self):
+        """Attempt to fill the rack up to 7 tiles."""
+        self.rack += self.bag.remove_tiles(7 - len(self.rack))
+
+    def reset_tiles(self):
+        """Reset the tiles currently in the rack."""
+        self.bag.add_tiles(self.rack)
+        self.bag.shake()
+        self.rack = self.bag.remove_tiles(7)
+
+    def add_word(self, word, x, y, orientation):
+        """Attempt to add the given word to the board. Returns the score
+        if successful, else returns -1."""
+        attempt = (word, x, y, orientation)
+        points = self.solver.get_score(self.board.tiles, self.rack, attempt)
+        if points <= 0:
+            return -1
+        set_tiles = self.board.set_word(word, x, y, orientation)
+        placed = [let if let.isupper() else "#" for let in set_tiles]
+        for let in placed:
+            del self.rack[self.rack.index(let)]
+        self.score += points
+        self.words.update({word: points})
+        return points
+
+    def summary(self):
+        """Provides a summary on the player's stats in the game."""
+        summary_string = "%s found the following words:\n%s\nFinal score: %i"
+        return summary_string % (self.name, str(self.words), self.score)
 
 
 def parse_command(solutions, instructions):
@@ -57,7 +215,7 @@ def print_turn(players, turn, board, bag):
 if __name__ == "__main__":
 
     # Introduction
-    solver_cli.clear()
+    utils.clear()
     print("Welcome to Scrabble!\n\n")
     HELP = (
         "To place a word on the word, type in the full word, the "
@@ -79,8 +237,8 @@ if __name__ == "__main__":
     input("Press enter to continue...")
 
     # Initialise game conditions
-    solver_cli.clear()
-    SOLVER = Solver("Collins Scrabble Words (2015).txt")
+    utils.clear()
+    SOLVER = ScrabbleSolver("Collins Scrabble Words (2015).txt")
     BOARD = Board(15, 15)
     BAG = Bag()
 
@@ -103,13 +261,13 @@ if __name__ == "__main__":
     while BAG.tiles or SKIPPED < TOTAL:
 
         # Calculate the solutions given the current player's rack
-        solver_cli.clear()
+        utils.clear()
         print("Calculating solutions...")
         PLAYER = PLAYERS[COUNTER]
         SOLUTIONS = SOLVER.solve(BOARD.tiles, PLAYER.rack)
 
         # Show the current player the game stats
-        solver_cli.clear()
+        utils.clear()
         print_turn(PLAYERS, COUNTER, BOARD, BAG)
         input("\nPress enter to see your tiles\n")
         print(PLAYER)
@@ -131,7 +289,7 @@ if __name__ == "__main__":
             print("Placement was invalid!")
 
         # Summarise the players turn
-        solver_cli.clear()
+        utils.clear()
         PLAYER.replenish_tiles()
         print_turn(PLAYERS, COUNTER, BOARD, BAG)
         print(PLAYER)
@@ -141,7 +299,7 @@ if __name__ == "__main__":
         COUNTER = (COUNTER + 1) % TOTAL
 
     # Summarise the game
-    solver_cli.clear()
+    utils.clear()
     PLAYERS.sort(key=lambda x: -x.score)
     WINNER = PLAYERS[0]
     print("The winner is %s with a score of %i\n" % (WINNER.name, WINNER.score))
