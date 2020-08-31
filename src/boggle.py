@@ -4,11 +4,12 @@
 """
 
 import re
+
 from collections import defaultdict
 from itertools import product
 from pythonds.basic.stack import Stack
 
-from src import wordtools
+from . import wordtools
 
 
 class BoggleSolver(wordtools.WordTree):
@@ -26,56 +27,60 @@ class BoggleSolver(wordtools.WordTree):
             e.g. substitute = {"QU" : "Q"}. Needs to be all in caps.
     """
 
-    def __init__(self, filename, substitutions=None, min_length=3):
-        super().__init__()
-        self.word_paths = defaultdict(list)
-        self.substitutions = substitutions if substitutions else {"QU": "Q"}
-        self._upload_words(filename, min_length)
+    SUBSTITUTIONS = {"QU": "Q"}
 
-    def solve(self, board):
+    def __init__(self, collection, min_length=3):
+        super().__init__()
+        self._setup(collection, min_length)
+        self.word_paths = defaultdict(list)
+
+    def _setup(self, collection, min_length):
+        """
+            Upload the Dictionary words from 'collection'. When solving,
+            the words file will be used for finding words.
+
+            Parameters:
+            > collection (list/set/str) - can either be a list/set of strings
+                or the filename of list of words
+            > min_length (int) - the minimum length of words uploaded
+        """
+        self._validate_min_length(min_length)
+        self.clear_words()
+        for word in self._validate_collection(collection):
+            if (not word.isalpha() or len(word) < min_length):
+                continue
+            substituted = self._apply_substitute(word.upper(), reverse=False)
+            self.add_word(substituted)
+
+    def solve(self, board, with_positions=False):
         """
             Iterates through all starting positions on the board, adding
             all possible words starting at that position.
 
             Parameters:
-            > board (lst) - 2d matrix representing a Boggle board, all
+            > board (list) - 2d matrix representing a Boggle board, all
                 entries in caps
+            > with_positions (bool) - whether positions of the letters forming
+                the words should be added to the solution
 
             Returns:
-            > (lst) - all words on the board, beginning with the longest
+            > (list) - all words on the board, beginning with the longest
                 word(s)
         """
+        board = self._validate_board(board, with_positions)
         self.word_paths = defaultdict(list)
         for row, col in product(range(len(board)), range(len(board[0]))):
             self._iteration(board, row, col)
+        if with_positions:
+            return sorted(self.word_paths.items(), key=lambda x: -len(x[0]))
         return sorted(self.word_paths.keys(), key=len, reverse=True)
-
-    def _upload_words(self, filename, min_length):
-        """
-            Upload the Dictionary words from a text file. When solving,
-            the words from this text file will be used for spell
-            checking.
-
-            Parameters:
-            > filename (str) - name of the text file
-            > min_length (int) - the minimum length of words uploaded
-        """
-        self.clear_words()
-        with open(filename, "r") as file_text:
-            text = file_text.read()
-        words = re.findall(r"[\w']+", text.upper())
-        for word in words:
-            if len(word) < min_length:
-                continue
-            substituted = self._apply_substitute(word, reverse=False)
-            self.add_word(substituted)
 
     def _apply_substitute(self, word, reverse=True):
         """If reverse is True, replace any single character
         substitutions in word with the sub-string substitution, found in
-        self.substitutions. If reverse is False, replace any sub-strings
+        self.SUBSTITUTIONS. If reverse is False, replace any sub-strings
         in word with the single character substitution."""
-        for item in self.substitutions.items():
+        for item in self.SUBSTITUTIONS.items():
             word = word.replace(item[reverse], item[not reverse])
         return word
 
@@ -115,11 +120,11 @@ class BoggleSolver(wordtools.WordTree):
             additions to a path.
 
             Parameters:
-            > board (lst) - 2d matrix representing a Boogle Board
-            > path (lst) - board path
+            > board (list) - 2d matrix representing a Boogle Board
+            > path (list) - board path
 
             Returns:
-            > (lst) - all board co-ordinates (x, y) which are adjacent
+            > (list) - all board co-ordinates (x, y) which are adjacent
                 to the last co-ordinate in path and are also not in path
         """
         adjacent = []
@@ -129,3 +134,99 @@ class BoggleSolver(wordtools.WordTree):
             if (adj_row, adj_col) not in path:
                 adjacent.append((adj_row, adj_col))
         return adjacent
+
+    @staticmethod
+    def _validate_collection(collection):
+        """Validate the collection parameter. Returns the words extracted."""
+
+        # Return collection if it is already a list/set
+        if isinstance(collection, (list, set)):
+            return collection
+
+        # Opens file and return lists of words in the file
+        if isinstance(collection, str):
+            with open(collection, "r") as file_text:
+                text = file_text.read()
+            return re.findall(r"[\w']+", text)
+
+        # Else an incorrect type has been received
+        raise TypeError(
+            "invalid value for 'collection' parameter. "
+            "Expected list, set or str, received '%s'." % type(collection).__name__
+        )
+
+    @staticmethod
+    def _validate_min_length(min_length):
+        """Validate the min_length parameter."""
+
+        # Check that value is an int
+        if not isinstance(min_length, int):
+            raise TypeError(
+                "invalid value for 'min_length' parameter. "
+                "Expected int, received '%s'." % type(min_length).__name__
+            )
+
+        # Check that value is in the correct range
+        if min_length < 0:
+            raise ValueError(
+                "invalid value for 'min_length' parameter. "
+                "Value needs to be non-negative"
+            )
+
+    def _validate_board(self, board, with_positions):
+        """Validate the board parameter. Returns the board."""
+
+        # Check board is a list
+        if not isinstance(board, list):
+            raise TypeError(
+                "invalid value for 'board' parameter. "
+                "Expected list, received '%s'." % type(board).__name__
+            )
+
+        # Check board is a list of lists
+        element_lengths = set()
+        for index, element in enumerate(board):
+            if not isinstance(element, list):
+                raise TypeError(
+                    "invalid value for 'board' parameter at index %i. "
+                    "Expected list, received '%s'." % (index, type(element).__name__)
+                )
+            element_lengths.add(len(element))
+
+        # Check all lists are the same size
+        if len(element_lengths) > 1:
+            raise ValueError(
+                "invalid value for 'board' parameter. "
+                "Not all rows are the same size."
+            )
+
+        # Check each element in the lists are strings
+        for index, element in enumerate(board):
+            for tile in element:
+                if not isinstance(tile, str):
+                    raise TypeError(
+                        "invalid value for 'board' parameter at index %i. "
+                        "Not all elements are str, found '%s'" % (index, type(tile).__name__)
+                    )
+            board[index] = [
+                self._apply_substitute(tile.upper(), reverse=False)
+                for tile in element
+            ]
+
+        # Check that each element of board is a single letter
+        for index, element in enumerate(board):
+            for letter in element:
+                if len(letter) != 1:
+                    raise ValueError(
+                        "invalid value for 'board' parameter at index %i. "
+                        "Cannot convert '%s' into a letter." % (index, letter)
+                    )
+
+        # Check the with_positions paramter
+        if not isinstance(with_positions, bool):
+            raise TypeError(
+                "invalid value for 'with_positions' parameter. "
+                "Expected bool, received '%s'." % type(board).__name__
+            )
+
+        return board

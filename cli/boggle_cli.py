@@ -9,7 +9,7 @@ import random
 import numpy as np
 
 from src.boggle import BoggleSolver
-import utilities as utils
+from . import utilities as utils
 
 
 CUBES_STANDARD = (
@@ -67,7 +67,7 @@ class Tray():
             self.board[num // self.height][num % self.width] = (
                 random.sample(cube, 1)[0]
             )
-        return self.board
+        return self.board.tolist()
 
 
 class Player():

@@ -11,8 +11,19 @@ from string import ascii_uppercase
 import numpy as np
 
 from src import scrabble
-from src.scrabble import ScrabbleSolver, TILES_STANDARD, PREMIUM_STANDARD
-import utilities as utils
+from src.scrabble import ScrabbleSolver, PREMIUM_STANDARD
+from . import utilities as utils
+
+
+TILES_STANDARD = [
+    'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'B', 'C', 'C', 'D', 'D',
+    'D', 'D', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'F',
+    'F', 'G', 'G', 'G', 'H', 'H', 'I', 'I', 'I', 'I', 'I', 'I', 'I', 'I', 'I',
+    'J', 'K', 'L', 'L', 'L', 'L', 'M', 'M', 'N', 'N', 'N', 'N', 'N', 'N', 'O',
+    'O', 'O', 'O', 'O', 'O', 'O', 'O', 'P', 'P', 'Q', 'R', 'R', 'R', 'R', 'R',
+    'R', 'S', 'S', 'S', 'S', 'T', 'T', 'T', 'T', 'T', 'T', 'U', 'U', 'U', 'U',
+    'V', 'V', 'W', 'W', 'X', 'Y', 'Y', 'Z', '#', '#'
+]
 
 
 class Board():
@@ -49,6 +60,16 @@ class Board():
         header = list(ascii_uppercase)[:self.width]
         main = [f'\n{n+1:>2} ' + " ".join(row) for n, row in enumerate(rows)]
         return "   " + " ".join(header) + "".join(main)
+
+    def get_tiles(self):
+        """Returns the tiles as a list of lists."""
+        matrix = list()
+        for row in self.tiles:
+            new_row = list()
+            for element in row:
+                new_row.append(element if element else "*")
+            matrix.append(new_row)
+        return matrix
 
     def set_word(self, word, x, y, orientation):
         """Places the given word on the board, originating at position
@@ -148,7 +169,7 @@ class Player():
         """Attempt to add the given word to the board. Returns the score
         if successful, else returns -1."""
         attempt = (word, x, y, orientation)
-        points = self.solver.get_score(self.board.tiles, self.rack, attempt)
+        points = self.solver.get_score(self.board.get_tiles(), self.rack, attempt)
         if points <= 0:
             return -1
         set_tiles = self.board.set_word(word, x, y, orientation)
@@ -264,7 +285,7 @@ if __name__ == "__main__":
         utils.clear()
         print("Calculating solutions...")
         PLAYER = PLAYERS[COUNTER]
-        SOLUTIONS = SOLVER.solve(BOARD.tiles, PLAYER.rack)
+        SOLUTIONS = SOLVER.solve(BOARD.get_tiles(), PLAYER.rack)
 
         # Show the current player the game stats
         utils.clear()
@@ -306,5 +327,5 @@ if __name__ == "__main__":
     print("Final standings: ")
     for PLAYER in PLAYERS:
         print('\n' + PLAYER.summary())
-    print('\n' + BOARD)
+    print('\n' + str(BOARD))
     print("\nThank you for playing!")

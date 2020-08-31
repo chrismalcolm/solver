@@ -1,18 +1,58 @@
 """
     This module contains the ScrabbleSolver, used to find all the possible
-    words that can be played in a game of Scrabble.
+    words that can be played on a Scrabble board.
 """
-
-# pylint: disable=unused-import
-# pylint: disable=invalid-name
 
 import re
 from string import ascii_lowercase, ascii_uppercase
 from collections import defaultdict
 import numpy as np
 
-from src.data import TILES_STANDARD, VALUE_STANDARD, PREMIUM_STANDARD
-from src import wordtools
+from . import wordtools
+
+
+VALUE_STANDARD = {
+    "A" : 1, "B" : 3, "C" : 3, "D" : 2, "E" : 1, "F" : 4, "G" : 2, "H" : 4,
+    "I" : 1, "J" : 8, "K" : 5, "L" : 1, "M" : 3, "N" : 1, "O" : 1, "P" : 3,
+    "Q" : 10, "R" : 1, "S" : 1, "T" : 1, "U" : 1, "V" : 4, "W" : 4, "X" : 8,
+    "Y" : 4, "Z" : 10
+}
+
+PREMIUM_STANDARD = [
+    ["T", "*", "*", "d", "*", "*", "*", "T", "*", "*", "*", "d", "*", "*", "T"],
+    ["*", "D", "*", "*", "*", "t", "*", "*", "*", "t", "*", "*", "*", "D", "*"],
+    ["*", "*", "D", "*", "*", "*", "d", "*", "d", "*", "*", "*", "D", "*", "*"],
+    ["d", "*", "*", "D", "*", "*", "*", "d", "*", "*", "*", "D", "*", "*", "d"],
+    ["*", "*", "*", "*", "D", "*", "*", "*", "*", "*", "D", "*", "*", "*", "*"],
+    ["*", "t", "*", "*", "*", "t", "*", "*", "*", "t", "*", "*", "*", "t", "*"],
+    ["*", "*", "d", "*", "*", "*", "d", "*", "d", "*", "*", "*", "d", "*", "*"],
+    ["T", "*", "*", "d", "*", "*", "*", "D", "*", "*", "*", "d", "*", "*", "T"],
+    ["*", "*", "d", "*", "*", "*", "d", "*", "d", "*", "*", "*", "d", "*", "*"],
+    ["*", "t", "*", "*", "*", "t", "*", "*", "*", "t", "*", "*", "*", "t", "*"],
+    ["*", "*", "*", "*", "D", "*", "*", "*", "*", "*", "D", "*", "*", "*", "*"],
+    ["d", "*", "*", "D", "*", "*", "*", "d", "*", "*", "*", "D", "*", "*", "d"],
+    ["*", "*", "D", "*", "*", "*", "d", "*", "d", "*", "*", "*", "D", "*", "*"],
+    ["*", "D", "*", "*", "*", "t", "*", "*", "*", "t", "*", "*", "*", "D", "*"],
+    ["T", "*", "*", "d", "*", "*", "*", "T", "*", "*", "*", "d", "*", "*", "T"]
+]
+
+EMPTY_STANDARD = [
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
+    ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"]
+]
 
 
 class ScrabbleSolver(wordtools.WordHash):
@@ -34,25 +74,24 @@ class ScrabbleSolver(wordtools.WordHash):
             words added with that length
     """
 
-    def __init__(self, filename, values=None, premium=None):
+    def __init__(self, collection):
         super().__init__()
         self.board = None
         self.minor = None
         self.rack = ""
-        self.values = values if values else VALUE_STANDARD
-        self.premium = premium if premium else PREMIUM_STANDARD
+        self.values = VALUE_STANDARD
+        self.premium = PREMIUM_STANDARD
         self.words_of_length = defaultdict(set)
-        self._upload_words(filename)
+        self._setup(collection)
 
-    def _upload_words(self, filename):
+    def _setup(self, collection):
         """Upload the Dictionary words from a text file 'filename'. When
         solving, the words from this text file will be used for spell
         checking."""
         self.clear_words()
-        with open(filename, "r") as file_text:
-            text = file_text.read()
-        words = re.findall(r"[\w']+", text.upper())
-        for word in words:
+        for word in self._validate_collection(collection):
+            if not word.isalpha():
+                continue
             self.add_word(word)
             self.words_of_length[len(word)].add(word)
 
@@ -61,21 +100,22 @@ class ScrabbleSolver(wordtools.WordHash):
             Solves the given Scrabble board, using the tiles in 'rack'.
 
             Parameters:
-            > board (lst) - 2d matrix representing a Scrabble board, all
+            > board (list) - 2d matrix representing a Scrabble board, all
                 letter tiles in upper case, blanks all lower case, empty
                 spaces can be "", "*" or None
-            > rack (lst) - letters of the tiles on the rack, blanks are
+            > rack (list) - letters of the tiles on the rack, blanks are
                 represented by a "#"
 
             Returns:
-            > solutions (lst) - list of solutions, each solution is of
+            > solutions (list) - list of solutions, each solution is of
                 the form (word, x, y, orientation, score)
 
             IMPORTANT NOTE:
             The algorithm used will not use blanks in place of tiles it
             already has. Blanks will only be to make a word if it has to
         """
-        matrix = np.array(board)
+        matrix = self._validate_board(board)
+        rack = self._validate_rack(rack)
         solutions = set()
 
         # Gather horizontal word solutions
@@ -94,15 +134,17 @@ class ScrabbleSolver(wordtools.WordHash):
             board with the given rack.
 
             Parameters:
-            > board (lst) - 2d matrix representing a Scrabble board, all
+            > board (list) - 2d matrix representing a Scrabble board, all
                 letter tiles in upper case, blanks all lower case, empty
                 spaces can be "", "*" or None
-            > rack (lst) - letters of the tiles on the rack, blanks are
+            > rack (list) - letters of the tiles on the rack, blanks are
                 represented by a "#"
             > attempt (tuple) - information of the attempt of the form:
                 (word, x, y, orientation)
         """
-        (word, x, y, orientation) = attempt
+        board = self._validate_board(board)
+        rack = self._validate_rack(rack)
+        (word, x, y, orientation) = self._validate_attempt(attempt)
 
         if not orientation:
             self._prepare(np.array(board), rack)
@@ -136,7 +178,7 @@ class ScrabbleSolver(wordtools.WordHash):
             for the given Scrabble board, using the tiles in 'rack'.
 
             Parameters:
-            > board (lst) - 2d matrix representing a Scrabble board, all
+            > board (list) - 2d matrix representing a Scrabble board, all
                 letter tiles in upper case, blanks all lower case
             > rack (str) - letters of the tiles on the rack, blanks are
                 represented by a "#"
@@ -349,3 +391,144 @@ class ScrabbleSolver(wordtools.WordHash):
             else:
                 return ""
         return rack_tiles
+
+    @staticmethod
+    def _validate_collection(collection):
+        """Validate the collection parameter. Returns the words extracted."""
+
+        # Return collection if it is already a list/set
+        if isinstance(collection, (list, set)):
+            return [word.upper() for word in collection]
+
+        # Opens file and return lists of words in the file
+        if isinstance(collection, str):
+            with open(collection, "r") as file_text:
+                text = file_text.read()
+            return re.findall(r"[\w']+", text.upper())
+
+        # Else an incorrect type has been received
+        raise TypeError(
+            "invalid value for 'collection' parameter. "
+            "Expected list, set or str, received '%s'." % type(collection).__name__
+        )
+
+    @staticmethod
+    def _validate_board(board):
+        """Validate the board parameter. Returns the board matrix."""
+
+        # Check board is a list
+        if not isinstance(board, list):
+            raise TypeError(
+                "invalid value for 'board' parameter. "
+                "Expected list, received '%s'." % type(board).__name__
+            )
+
+        # Check board is a list of length 15
+        rows = len(board)
+        if rows != 15:
+            raise ValueError(
+                "invalid value for 'board' parameter. "
+                "Expected 15 rows, received %i.." % rows
+            )
+
+        # Check board is a list of lists
+        element_lengths = set()
+        for index, element in enumerate(board):
+            if not isinstance(element, list):
+                raise TypeError(
+                    "invalid value for 'board' parameter at index %i. "
+                    "Expected list, received '%s'." % (index, type(element).__name__)
+                )
+            element_lengths.add(len(element))
+
+        # Check all lists are the same size
+        if element_lengths != {15}:
+            raise ValueError(
+                "invalid value for 'board' parameter. "
+                "Not all rows are 15 tiles long."
+            )
+
+        # Check each element in the lists are strings
+        for index, element in enumerate(board):
+            for tile in element:
+                if not isinstance(tile, str):
+                    raise TypeError(
+                        "invalid value for 'board' parameter at index %i. "
+                        "Not all elements are str, found '%s'" % (index, type(tile).__name__)
+                    )
+            board[index] = [
+                (tile if tile.isalpha() else "*")
+                for tile in element
+            ]
+
+        # Check that each element of board is a single character
+        for index, element in enumerate(board):
+            for letter in element:
+                if len(letter) != 1:
+                    raise ValueError(
+                        "invalid value for 'board' parameter at index %i. "
+                        "Cannot convert '%s' into a letter." % (index, letter)
+                    )
+
+        return np.array(board)
+
+    @staticmethod
+    def _validate_rack(rack):
+        """Validate the rack parameter. Returns the rack."""
+
+        # Check that rack is either a list, set or string
+        if isinstance(rack, list):
+            return rack
+        if isinstance(rack, set):
+            return list(rack)
+        if isinstance(rack, str):
+            return rack.split()
+        raise TypeError(
+            "invalid value for 'rack' parameter. "
+            "Expected list, set or str, received '%s'." % type(rack).__name__
+        )
+
+    @staticmethod
+    def _validate_attempt(attempt):
+        """Validate the attempt parameter. Returns the attempt."""
+
+        # Check the tuple count
+        try:
+            (word, x, y, orientation) = attempt
+        except ValueError as exc:
+            raise exc
+
+        # Check word is an alphabetically string
+        if not isinstance(word, str):
+            raise ValueError(
+                "invalid value for 'attempt' parameter. "
+                "The word value is not an alphabetical string."
+            )
+        if not word.isalpha():
+            raise ValueError(
+                "invalid value for 'attempt' parameter. "
+                "The word value is not an alphabetical string."
+            )
+
+        # Check the x value
+        if not isinstance(x, int):
+            raise ValueError(
+                "invalid value for 'attempt' parameter. "
+                "The x value is not an int."
+            )
+
+        # Check the y value
+        if not isinstance(y, int):
+            raise ValueError(
+                "invalid value for 'attempt' parameter. "
+                "The y value is not an int."
+            )
+
+        # Check the y value
+        if not isinstance(orientation, bool):
+            raise ValueError(
+                "invalid value for 'attempt' parameter. "
+                "The orientation value is not a bool."
+            )
+
+        return attempt
