@@ -302,7 +302,8 @@ class WordSearchSolver(wordtools.WordTree):
 
         # Check that directions are all valid compass directions or all
         directions = {dir.upper() for dir in directions}
-        if directions > (self.DIRECTIONS.keys() | {"ALL"}):
+
+        if not directions.issubset(self.DIRECTIONS.keys() | {"ALL"}):
             raise ValueError(
                 "invalid value for 'directions' parameter. "
                 "Permitted directions are N, NW, W, SW, S, SE, E, NE or ALL."

@@ -12,6 +12,16 @@ class HangmanTest(unittest.TestCase):
         """Define the solver."""
         cls.solver = hangman.HangmanSolver("test/dictionary.txt")
 
+    def test_from_list(self):
+        """Test words can be loaded from a list."""
+        solver = hangman.HangmanSolver(["ROUND", "ROOTS", "SOUND", "ABOUT"])
+        self.assertEqual({"ROUND"}, solver.solve("RO###", "S"))
+
+    def test_from_set(self):
+        """Test words can be loaded from a list."""
+        solver = hangman.HangmanSolver({"ROUND", "ROOTS", "SOUND", "ABOUT"})
+        self.assertEqual({"ABOUT"}, solver.solve("##O##", "R"))
+
     def test_basic(self):
         """Basic test."""
         self.assertEqual(
@@ -28,3 +38,26 @@ class HangmanTest(unittest.TestCase):
             ('E', 0.5),
             self.solver.guess_distrubtion("AB###", "")
         )
+
+    def test_init_exceptions(self):
+        """Test all exceptions that can be raised with init parameters."""
+        self.assertRaises(TypeError, hangman.HangmanSolver, 1)
+
+    def test_solve_exceptions(self):
+        """Test all exceptions that can be raised with solve parameters."""
+        self.assertRaises(TypeError, self.solver.solve, 1, "AOS")
+        self.assertRaises(TypeError, self.solver.solve, [1, 2, 3], "AOS")
+        self.assertRaises(ValueError, self.solver.solve, ["THE", "ERR"], "AOS")
+        self.assertRaises(TypeError, self.solver.solve, "T###", 2)
+        self.assertRaises(TypeError, self.solver.solve, "T###", [4, 5, 6])
+        self.assertRaises(ValueError, self.solver.solve, "T###", ["RE", "DS"])
+
+    def test_guess_exceptions(self):
+        """Test all exceptions that can be raised with guess_distrubtion
+        parameters."""
+        self.assertRaises(TypeError, self.solver.guess_distrubtion, 1, "AOS")
+        self.assertRaises(TypeError, self.solver.guess_distrubtion, [1, 2, 3], "AOS")
+        self.assertRaises(ValueError, self.solver.guess_distrubtion, ["THE", "ERR"], "AOS")
+        self.assertRaises(TypeError, self.solver.guess_distrubtion, "T###", 2)
+        self.assertRaises(TypeError, self.solver.guess_distrubtion, "T###", [4, 5, 6])
+        self.assertRaises(ValueError, self.solver.guess_distrubtion, "T###", ["RE", "DS"])

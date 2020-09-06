@@ -193,7 +193,7 @@ class HangmanSolver(wordtools.WordHash):
                 "Expected list, set or str received '%s'." % type(attempt).__name__
             )
 
-        # Check that attempt is a string
+        # Check that attempt elements are strings
         element_lengths = set()
         for index, element in enumerate(attempt):
             if not isinstance(element, str):
@@ -232,7 +232,7 @@ class HangmanSolver(wordtools.WordHash):
         wrong = {letter.upper() for letter in wrong}
 
         # Check each element of wrong is a single character (if non-empty)
-        if wrong == "" and element_lengths != {1}:
+        if wrong and element_lengths != {1}:
             raise ValueError(
                 "invalid value for 'wrong' parameter. "
                 "Not all strings are characters."

@@ -29,9 +29,9 @@ Once the solver has been initialised, it is read to solve via the `solve` method
 ### Boggle
 
 ```python
->>> from src import boggle
->>> solver = boggle.BoggleSolver("test/dictionary.txt")
->>> solver.solve([
+>>> from solver import BoggleSolver
+>>> boggle_solver = BoggleSolver("dictionary.txt")
+>>> boggle_solver.solve([
 ...     ["A", "C", "T"],
 ...     ["N", "O", "I"]
 ... ])
@@ -42,11 +42,11 @@ Once the solver has been initialised, it is read to solve via the `solve` method
 ### Scrabble
 
 ```python
->>> from src import scrabble
->>> solver = scrabble.ScrabbleSolver("test/dictionary.txt")
->>> solver.solve(scrabble.EMPTY_STANDARD, ["Z", "O", "D", "I", "A", "C", "S"])
+>>> from solver import ScrabbleSolver
+>>> scrabble_solver = ScrabbleSolver("dictionary.txt")
+>>> scrabble_solver.solve(scrabble.EMPTY_STANDARD, ["Z", "O", "D", "I", "A", "C", "S"])
 [('ZODIACS', 3, 7, False, 108), ('ZODIACS', 7, 3, True, 108), ('ZODIACS', 6, 7, False, 94), ... , ('OS', 7, 6, True, 4), ('OI', 6, 7, False, 4), ('OI', 7, 6, True, 4)]
->>> solver.get_score(scrabble.EMPTY_STANDARD, ["A", "#", "E"], ("ARE", 7, 7, False))
+>>> scrabble_solver.get_score(scrabble.EMPTY_STANDARD, ["A", "#", "E"], ("ARE", 7, 7, False))
 4
 >>>
 ```
@@ -54,11 +54,11 @@ Once the solver has been initialised, it is read to solve via the `solve` method
 ### Hangman
 
 ```python
->>> from src import hangman
->>> solver = hangman.HangmanSolver("test/dictionary.txt")
->>> solver.solve("UN###", "ABET")
+>>> from solver import HangmanSolver
+>>> hangman_solver = HangmanSolver("dictionary.txt")
+>>> hangman_solver.solve("UN###", "ABET")
 {'UNRIG', 'UNCOY', 'UNHIP', 'UNFIX', 'UNGOD', 'UNDOS', 'UNLID', 'UNZIP', 'UNRID', 'UNDID', 'UNCOS', 'UNRIP', 'UNSOD', 'UNMIX', 'UNIFY', 'UNKID'}
->>> solver.guess_distrubtion("UN###", "ABET")
+>>> hangman_solver.guess_distrubtion("UN###", "ABET")
 [('I', 0.6875), ('D', 0.4375), ('O', 0.3125), ('P', 0.1875), ('S', 0.1875), ('R', 0.1875), ('F', 0.125), ('Y', 0.125), ('G', 0.125), ('X', 0.125), ('C', 0.125), ('Z', 0.0625), ('M', 0.0625), ('L', 0.0625), ('K', 0.0625), ('H', 0.0625), ('J', 0), ('V', 0), ('Q', 0), ('W', 0)]
 >>>
 ```
@@ -66,9 +66,9 @@ Once the solver has been initialised, it is read to solve via the `solve` method
 ### Wordsearch
 
 ```python
->>> from src import wordsearch
->>> solver = wordsearch.WordSearchSolver("test/dictionary.txt")
->>> solver.solve([
+>>> import solver import WordSearchSolver
+>>> wordsearch_solver = WordSearchSolver("dictionary.txt")
+>>> wordsearch_solver.solve([
 ...     ["C", "O", "A", "T"],
 ...     ["R", "E", "C", "O"],
 ...     ["A", "R", "T", "E"],
