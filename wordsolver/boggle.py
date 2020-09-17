@@ -9,7 +9,7 @@ from collections import defaultdict
 from itertools import product
 from pythonds.basic.stack import Stack
 
-from . import wordtools
+from wordsolver import wordtools
 
 
 class BoggleSolver(wordtools.WordTree):

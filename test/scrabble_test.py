@@ -1,7 +1,7 @@
 """Test module for the scrabble module."""
 
 import unittest
-from src import scrabble
+from wordsolver import ScrabbleSolver, EMPTY_STANDARD
 
 
 class ScrabbleTest(unittest.TestCase):
@@ -10,7 +10,7 @@ class ScrabbleTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Define the solver."""
-        cls.solver = scrabble.ScrabbleSolver("test/dictionary.txt")
+        cls.solver = ScrabbleSolver("test/dictionary.txt")
         cls.board = [
             ["T", "E", "S", "T", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
             ["*", "B", "O", "A", "R", "D", "*", "*", "*", "*", "*", "*", "*", "*", "*"],
@@ -31,14 +31,14 @@ class ScrabbleTest(unittest.TestCase):
 
     def test_from_list(self):
         """Test words can be loaded from a list."""
-        solver = scrabble.ScrabbleSolver(["CAT", "DOG"])
-        solutions = solver.solve(scrabble.EMPTY_STANDARD, ["C", "A", "T", "D", "O", "G"])
+        solver = ScrabbleSolver(["CAT", "DOG"])
+        solutions = solver.solve(EMPTY_STANDARD, ["C", "A", "T", "D", "O", "G"])
         self.assertEqual(12, len(solutions))
 
     def test_from_set(self):
         """Test words can be loaded from a set."""
-        solver = scrabble.ScrabbleSolver({"ABC", "DEF"})
-        solutions = solver.solve(scrabble.EMPTY_STANDARD, ["A", "B", "C", "D", "E", "F"])
+        solver = ScrabbleSolver({"ABC", "DEF"})
+        solutions = solver.solve(EMPTY_STANDARD, ["A", "B", "C", "D", "E", "F"])
         self.assertEqual(12, len(solutions))
 
     def test_blanks(self):
@@ -70,7 +70,7 @@ class ScrabbleTest(unittest.TestCase):
 
     def test_init_exceptions(self):
         """Test all exceptions that can be raised with init parameters."""
-        self.assertRaises(TypeError, scrabble.ScrabbleSolver, 1)
+        self.assertRaises(TypeError, ScrabbleSolver, 1)
 
     def test_solve_exceptions(self):
         """Test all exceptions that can be raised with solve parameters."""

@@ -1,7 +1,7 @@
 """Test module for the boggle module."""
 
 import unittest
-from src import boggle
+from wordsolver import BoggleSolver
 
 
 class BoggleTest(unittest.TestCase):
@@ -10,11 +10,11 @@ class BoggleTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Define the solver."""
-        cls.solver = boggle.BoggleSolver("test/dictionary.txt")
+        cls.solver = BoggleSolver("test/dictionary.txt")
 
     def test_from_list(self):
         """Test words can be loaded from a list."""
-        solver = boggle.BoggleSolver(["CAT", "DOG"])
+        solver = BoggleSolver(["CAT", "DOG"])
         self.assertEqual(
             {"CAT", "DOG"},
             set(solver.solve([
@@ -25,7 +25,7 @@ class BoggleTest(unittest.TestCase):
 
     def test_from_set(self):
         """Test words can be loaded from a set."""
-        solver = boggle.BoggleSolver({"BLUE", "CYAN"})
+        solver = BoggleSolver({"BLUE", "CYAN"})
         self.assertEqual(
             {"BLUE", "CYAN"},
             set(solver.solve([
@@ -210,9 +210,9 @@ class BoggleTest(unittest.TestCase):
 
     def test_init_exceptions(self):
         """Test all exceptions that can be raised with init parameters."""
-        self.assertRaises(TypeError, boggle.BoggleSolver, 1)
-        self.assertRaises(TypeError, boggle.BoggleSolver, {"TIN"}, "3")
-        self.assertRaises(ValueError, boggle.BoggleSolver, {"CAN"}, -1)
+        self.assertRaises(TypeError, BoggleSolver, 1)
+        self.assertRaises(TypeError, BoggleSolver, {"TIN"}, "3")
+        self.assertRaises(ValueError, BoggleSolver, {"CAN"}, -1)
 
     def test_solve_exceptions(self):
         """Test all exceptions that can be raised with solve parameters."""

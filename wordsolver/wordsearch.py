@@ -6,7 +6,7 @@ from enum import Enum
 from itertools import chain
 import re
 
-from . import wordtools
+from wordsolver import wordtools
 
 
 class Direction(Enum):

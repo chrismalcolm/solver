@@ -8,7 +8,7 @@ from string import ascii_lowercase, ascii_uppercase
 from collections import defaultdict
 import numpy as np
 
-from . import wordtools
+from wordsolver import wordtools
 
 
 VALUE_STANDARD = {

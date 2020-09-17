@@ -1,7 +1,7 @@
 """Test module for the hangman module."""
 
 import unittest
-from src import hangman
+from wordsolver import HangmanSolver
 
 
 class HangmanTest(unittest.TestCase):
@@ -10,16 +10,16 @@ class HangmanTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Define the solver."""
-        cls.solver = hangman.HangmanSolver("test/dictionary.txt")
+        cls.solver = HangmanSolver("test/dictionary.txt")
 
     def test_from_list(self):
         """Test words can be loaded from a list."""
-        solver = hangman.HangmanSolver(["ROUND", "ROOTS", "SOUND", "ABOUT"])
+        solver = HangmanSolver(["ROUND", "ROOTS", "SOUND", "ABOUT"])
         self.assertEqual({"ROUND"}, solver.solve("RO###", "S"))
 
     def test_from_set(self):
         """Test words can be loaded from a list."""
-        solver = hangman.HangmanSolver({"ROUND", "ROOTS", "SOUND", "ABOUT"})
+        solver = HangmanSolver({"ROUND", "ROOTS", "SOUND", "ABOUT"})
         self.assertEqual({"ABOUT"}, solver.solve("##O##", "R"))
 
     def test_basic(self):
@@ -41,7 +41,7 @@ class HangmanTest(unittest.TestCase):
 
     def test_init_exceptions(self):
         """Test all exceptions that can be raised with init parameters."""
-        self.assertRaises(TypeError, hangman.HangmanSolver, 1)
+        self.assertRaises(TypeError, HangmanSolver, 1)
 
     def test_solve_exceptions(self):
         """Test all exceptions that can be raised with solve parameters."""

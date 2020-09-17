@@ -7,7 +7,7 @@ from collections import defaultdict
 import re
 from string import ascii_uppercase
 from itertools import product
-from . import wordtools
+from wordsolver import wordtools
 
 
 class HangmanSolver(wordtools.WordHash):

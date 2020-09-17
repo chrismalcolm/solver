@@ -1,7 +1,7 @@
 """Test module for the wordsearch module."""
 
 import unittest
-from src import wordsearch
+from wordsolver import WordSearchSolver
 
 
 class WordSearchTest(unittest.TestCase):
@@ -10,7 +10,7 @@ class WordSearchTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Define the solver."""
-        cls.solver = wordsearch.WordSearchSolver("test/dictionary.txt")
+        cls.solver = WordSearchSolver("test/dictionary.txt")
         cls.grid = [
             ["C", "A", "R", "O", "L"],
             ["O", "R", "E", "E", "A"],
@@ -21,7 +21,7 @@ class WordSearchTest(unittest.TestCase):
 
     def test_from_list(self):
         """Test words can be loaded from a list."""
-        solver = wordsearch.WordSearchSolver(["LEAPS", "CORES"])
+        solver = WordSearchSolver(["LEAPS", "CORES"])
         correct = [
             ('CORES', (0, 0), (0, 4)),
             ('LEAPS', (4, 0), (0, 4))
@@ -33,7 +33,7 @@ class WordSearchTest(unittest.TestCase):
 
     def test_from_set(self):
         """Test words can be loaded from a set."""
-        solver = wordsearch.WordSearchSolver({"CAROL", "CRATE"})
+        solver = WordSearchSolver({"CAROL", "CRATE"})
         correct = [
             ('CAROL', (0, 0), (4, 0)),
             ('CRATE', (0, 0), (4, 4))
@@ -92,7 +92,7 @@ class WordSearchTest(unittest.TestCase):
 
     def test_init_exceptions(self):
         """Test all exceptions that can be raised with init parameters."""
-        self.assertRaises(TypeError, wordsearch.WordSearchSolver, 1)
+        self.assertRaises(TypeError, WordSearchSolver, 1)
 
     def test_solve_exceptions(self):
         """Test all exceptions that can be raised with solve parameters."""
