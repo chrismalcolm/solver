@@ -63,7 +63,7 @@ class HangmanSolver(wordtools.WordHash):
         self._reduce_candidates(attempt, incorrect)
         return self.candidates
 
-    def guess_distrubtion(self, attempt, wrong):
+    def guess_distribution(self, attempt, wrong):
         """
             Returns the probability for each letter to be in the word.
 

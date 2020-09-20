@@ -36,7 +36,7 @@ class HangmanTest(unittest.TestCase):
         )
         self.assertIn(
             ('E', 0.5),
-            self.solver.guess_distrubtion("AB###", "")
+            self.solver.guess_distribution("AB###", "")
         )
 
     def test_init_exceptions(self):
@@ -53,11 +53,11 @@ class HangmanTest(unittest.TestCase):
         self.assertRaises(ValueError, self.solver.solve, "T###", ["RE", "DS"])
 
     def test_guess_exceptions(self):
-        """Test all exceptions that can be raised with guess_distrubtion
+        """Test all exceptions that can be raised with guess_distribution
         parameters."""
-        self.assertRaises(TypeError, self.solver.guess_distrubtion, 1, "AOS")
-        self.assertRaises(TypeError, self.solver.guess_distrubtion, [1, 2, 3], "AOS")
-        self.assertRaises(ValueError, self.solver.guess_distrubtion, ["THE", "ERR"], "AOS")
-        self.assertRaises(TypeError, self.solver.guess_distrubtion, "T###", 2)
-        self.assertRaises(TypeError, self.solver.guess_distrubtion, "T###", [4, 5, 6])
-        self.assertRaises(ValueError, self.solver.guess_distrubtion, "T###", ["RE", "DS"])
+        self.assertRaises(TypeError, self.solver.guess_distribution, 1, "AOS")
+        self.assertRaises(TypeError, self.solver.guess_distribution, [1, 2, 3], "AOS")
+        self.assertRaises(ValueError, self.solver.guess_distribution, ["THE", "ERR"], "AOS")
+        self.assertRaises(TypeError, self.solver.guess_distribution, "T###", 2)
+        self.assertRaises(TypeError, self.solver.guess_distribution, "T###", [4, 5, 6])
+        self.assertRaises(ValueError, self.solver.guess_distribution, "T###", ["RE", "DS"])

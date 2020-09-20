@@ -7,7 +7,7 @@ Supports the following word games:
 * Boggle
 * Scrabble
 * Hangman
-* Wordsearch
+* Words earch
 
 ## Installation
 
@@ -34,7 +34,7 @@ Once the solver has been initialised, it is read to solve via the `solve` method
 
 ### Boggle
 
-For solving Boggle, the `BoggleSolver` class is used. The `solve` method accepts a first arguments as a 2d list representing a board. All letters must be upper case, aside from "Qu" which is also accepted. The letter "Q" will always be subsituted for a "Qu". Any size of board dimensions are supported. Solutions are returned as a list of upper case strings.
+For solving Boggle, the `BoggleSolver` class is used. The `solve` method accepts a first arguments as a 2d list representing a board. All letters must be upper case, aside from "Qu" which is also accepted. The letter "Q" will always be substituted for a "Qu". Any size of board dimensions are supported. Solutions are returned as a list of upper case strings.
 
 The `solve` method also has an optional positional argument `with_positions`. If this is set to True, the positions of the solutions are returned, each solution represented as a tuple.
 
@@ -63,9 +63,9 @@ The `solve` method also has an optional positional argument `with_positions`. If
 
 ### Scrabble
 
-For solving Scrabble, the `ScrabbleSolver` class is used. The `solve` method accepts two arguments. The first is a 15x15 2d list representing a Scrabble board. Upper case letters should be used for normal tiles, lower case letters should be used for blanks and the wildcard character "\*" should be used for vacant spaces. The `EMPTY_STANDARD` varaible is also provided as a shorthand for representing an empty 15x15 board. The second argument is the rack which should be a list of rack tiles, capital letters for tiles and "#" for blanks. Placements of the solutions are returned as tuple of 4 variables: a string of the word placed in upper case, the x and y coordinates and a boolean value, True for horizontal, False for vertical.
+For solving Scrabble, the `ScrabbleSolver` class is used. The `solve` method accepts two arguments. The first is a 15x15 2d list representing a Scrabble board. Upper case letters should be used for normal tiles, lower case letters should be used for blanks and the wildcard character "\*" should be used for vacant spaces. The `EMPTY_STANDARD` variable is also provided as a shorthand for representing an empty 15x15 board. The second argument is the rack which should be a list of rack tiles, capital letters for tiles and "#" for blanks. Placements of the solutions are returned as tuple of 4 variables: a string of the word placed in upper case, the x and y coordinates and a boolean value, True for horizontal, False for vertical.
 
-A `get_score` method is also provided for checking the score given for a word placement. This method accepts the same arguemnts as the previous method, alongside the additional placement argument. The placement should be a tuple of 4 variables: a string of the word placed in upper case, the x and y coordinates and a boolean value, True for horizontal, False for vertical. The score is returned.
+A `get_score` method is also provided for checking the score given for a word placement. This method accepts the same arguments as the previous method, alongside the additional placement argument. The placement should be a tuple of 4 variables: a string of the word placed in upper case, the x and y coordinates and a boolean value, True for horizontal, False for vertical. The score is returned.
 
 ```python
 >>> from wordsolver import ScrabbleSolver, EMPTY_STANDARD
@@ -100,9 +100,9 @@ A `get_score` method is also provided for checking the score given for a word pl
 
 ### Hangman
 
-For solving Hangman, the `HangmanSolver` class is used. The `solve` method accepts two arguments, both are strings. The first argument is the current attempt of the word, with "#" to represent any unfound letters. The second argument is a string containing each letter that was guess but incorrect. Note that the solver automatically assumes that all the letters in the current attempt will not reappear in the final word. A list of possible solutions is returned as a list.
+For solving Hangman, the `HangmanSolver` class is used. The `solve` method accepts two arguments, both are strings. The first argument is the current attempt of the word, with "#" to represent any missing letters. The second argument is a string containing each letter that was a guess but incorrect. Note that the solver automatically assumes that all the letters in the current attempt will not reappear in the final word. A list of possible solutions is returned as a list.
 
-The `guess_distrubtion` method can be used to get the probabilities of each of the letters being in the solution. A list of tuple pairs in returned, with each letter and their probability.
+The `guess_distribution` method can be used to get the probabilities of each of the letters being in the solution. A list of tuple pairs in returned, with each letter and their probability.
 
 ```python
 >>> from wordsolver import HangmanSolver
@@ -114,11 +114,11 @@ The `guess_distrubtion` method can be used to get the probabilities of each of t
 >>>
 ```
 
-### Wordsearch
+### Word search
 
-For solving a wordsearch, the `WordSearchSolver` class is used. The `solve` method accepts a 2d list representing the wordsearch as its first argument. Any size dimensions are supported. Returns each soultion as a tuple, with the word as the first variable, its start x, y coordinates as the second and final x, y coordinates as its last.
+For solving a word search, the `WordSearchSolver` class is used. The `solve` method accepts a 2d list representing the word search as its first argument. Any size dimensions are supported. Returns each solution as a tuple, with the word as the first variable, its start x, y coordinates as the second and final x, y coordinates as its last.
 
-THe directions to check for words can also be specified via the optional positinoal argument `directions`. This should be a list containing any combination of the following compass directions ("N", "NE", "E", "SE", "S", "SW", "W", "NW"). Only words reading in the compass directions added will be in the solutions. Without this argument, default behaviour is to check all directions.
+The directions to check for words can also be specified via the optional positional argument `directions`. This should be a list containing any combination of the following compass directions ("N", "NE", "E", "SE", "S", "SW", "W", "NW"). Only words reading in the compass directions added will be in the solutions. Without this argument, default behaviour is to check all directions.
 
 ```python
 >>> import wordsolver import WordSearchSolver
